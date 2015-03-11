@@ -18,7 +18,7 @@ char/string
 */
 
 
-bool analys_params(int argc, char* argv[]) {
+bool analys_params(int argc, char* argv[]) { //luchshe analyze
 
 	if (argc == 1) {
 		cout << "Welcome to My-C-compiler!" << endl << "Use -l to split your code to lexemes." << endl << endl;
@@ -36,7 +36,7 @@ bool analys_params(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
-	if (DEBUG) {
+	if (DEBUG) { //lalka-kopalka
 		//mcc_scanner scanner("D:\\Work\\MCC\\all_tests\\barsukov_tests\\dot_in_numbers.c");
 		//mcc_scanner scanner("D:\\Work\\MCC\\all_tests\\barsukov_tests\\ints.c");
 		//mcc_scanner scanner("D:\\Work\\MCC\\all_tests\\barsukov_tests\\barsukov_01.c");
