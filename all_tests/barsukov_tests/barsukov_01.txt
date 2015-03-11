@@ -1,9 +1,0 @@
-double	1	1	.2267	0.2267
-double	1	2	.1e23	1e+022
-double	1	3	1.e12	1e+012
-double	1	4	1e-1	0.1
-double	1	5	013e12	1.3e+013
-double	1	6	01e13	1e+013
-integer	1	7	0x2	2
-double	1	8	.12	0.12
-double	1	9	.0e1	0

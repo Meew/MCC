@@ -1,0 +1,15 @@
+punctuator [1, 1]	{	curlybraceL
+punctuator [1, 2]	}	curlybraceR
+punctuator [1, 3]	;	semicolon
+punctuator [1, 4]	,	comma
+punctuator [1, 5]	(	braceL
+punctuator [1, 6]	)	braceR
+punctuator [1, 7]	?	ternaryQ
+punctuator [1, 8]	:	ternaryC
+punctuator [1, 9]	[	squarebraceL
+punctuator [1, 10]	]	squarebraceR
+punctuator [1, 11]	^	xor
+punctuator [1, 12]	^=	xorEqual
+punctuator [1, 14]	*	asterisk
+punctuator [1, 15]	*=	asteriskEqual
+punctuator [1, 17]	~	notBin

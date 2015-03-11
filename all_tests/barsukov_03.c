@@ -1,7 +1,5 @@
-#include "stdio.h"
-
 int main() {
-	double oct = 087.52e-5;
+	double oct = 87.52e-5;
 	printf("%f", oct);
 
 	// char* ch1 = "\1\2\3\4\5\q\w\e\r\t\y\u\i\o\p\[\]\\\a\s\d\f\g\h\j\k\l\;\'\z\x\c\v\b\n\m\,\.\//\Q|W|E|R|T";
@@ -9,13 +7,11 @@ int main() {
 	char* ch3 = "" ""	""
 	""					"";
 	int a = 0721;
-	char b = '\111';
-	char c = '\xAA';
 	char d = '\'';
-	float e = 0000032197031.e1l;
+	float e = 0000032147031.e1;
 	char* f = "asda";
 	//char* g = L"asdas";
-	char* h = "\n\'\"\a\f\r\b";
+	char* h = "\n\'\"";
 	int aa = 0xadaf;
 	int ab = 28913.232E-28;
 	double ac = 2.2e09;

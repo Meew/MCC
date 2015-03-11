@@ -7,15 +7,9 @@
 
 #include "scanner/mcc_scanner.h"
 
-#define DEBUG 1
-
 using namespace std;
 
-/*
-Доделать:
-destructors
-char/string
-*/
+ofstream out("lex.out");
 
 void show_help() {
 	cout << "Welcome to My-C-compiler!" << endl;
@@ -47,40 +41,42 @@ bool analyze_params(int argc, char* argv[]) {
 					if (scanner.next() == 0) {
 						break;
 					}
-					cout << scanner.get() << endl;
+					out << scanner.get() << endl;
 				}
 			}
 			catch (mcc_scanner::bad_token) {
 				cerr << "Bad lexeme. Current position - " << scanner.get_position() << endl;
 			}
 		} else {
-			cout << "Error: Unknown argument." << endl;
+			cerr << "Error: Unknown argument." << endl;
 		}
 	} else {
-		cout << "Too many arguments." << endl;
+		cerr << "Too many arguments." << endl;
 	}
 
     return 1;
 }
 
 int main(int argc, char* argv[]) {
-	//analyze_params(argc, argv);
 
-#if 1
-	mcc_scanner scanner("C:\\Users\\Meew\\Dropbox\\MCC\\MCC\\all_tests\\barsukov_tests\\comments.c");
+	analyze_params(argc, argv);
+
+#if 0
+	mcc_scanner scanner("C:\\Users\\Meew\\Dropbox\\MCC\\MCC\\all_tests\\davidyuk_test_01.c");
 	try {
 		while (true) {
 			if (scanner.next() == 0) {
 				break;
 			}
-			cout << scanner.get() << endl;
+			out << scanner.get() << endl;
 		}
 	}
 	catch (mcc_scanner::bad_token) {
 		cerr << "Bad lexeme. Current position - " << scanner.get_position() << endl;
 	}	
-#endif
 
 	system("pause");
+#endif
+
 	return 0;
 }

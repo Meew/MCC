@@ -195,7 +195,7 @@ public:
 	token* finish_processing();
 
 private:
-	set<char*> keywords;
+	set<string> keywords;
 };
 
 class int_node : public scanner_node {

@@ -23,11 +23,12 @@ void scanner_node::token::reset() {
 }
 
 std::ostream& operator << (std::ostream& out, scanner_node::token token_) {
+	std::ostream& temp = out << token_.get_type_name() << " " << token_.pos << "\t" << token_.text << "\t";
 	switch (token_.type) {
-		case     TOKEN_INTEGER:    return out << token_.get_type_name() << " " << token_.pos << "\t" << token_.text << "\t" << token_.value.integer_value;
-		case     TOKEN_DOUBLE:     return out << token_.get_type_name() << " " << token_.pos << "\t" << token_.text << "\t" << token_.value.double_value;
-		case     TOKEN_CHAR:	   return out << token_.get_type_name() << " " << token_.pos << "\t" << token_.text << "\t" << token_.value.char_value;
-		default:                   return out << token_.get_type_name() << " " << token_.pos << "\t" << token_.text << "\t" << token_.value.string_value;
+		case     TOKEN_INTEGER:    return temp << token_.value.integer_value;
+		case     TOKEN_DOUBLE:     return temp << token_.value.double_value;
+		case     TOKEN_CHAR:	   return temp << token_.value.char_value;
+		default:                   return temp << token_.value.string_value;
 	}
 }
 
@@ -56,7 +57,7 @@ int scanner_node::token::position::operator == (const scanner_node::token::posit
 }
 
 std::ostream& operator << (std::ostream& out, const scanner_node::token::position& position_) {
-	return out << position_.col << "\t" << position_.row;
+	return out << "[" <<position_.col << ", " << position_.row << "]";
 }
 
 void scanner_node::token::feel_map() {
@@ -338,40 +339,42 @@ void scanner_node::get_string() { // repeating code. IM SO SORRY
 }
 
 void scanner_node::get_single_comments(scanner_node* parent) {
-	vector<char> except;
-	except.push_back('\n');
-	except.push_back(EOF);
+	vector<char> except = { '\n', EOF };
 
-	comments_node* open_com = new comments_node(true, token_); //open com
+	comments_node* open_com = new comments_node(true, token_);
+	comments_node* com = new comments_node(true, token_);
+	comments_node* close_com = new comments_node(true, token_);
+
 	add_to_map(parent, '/', open_com);
 
-	comments_node* com = new comments_node(true, token_);
 	open_com->add_to_map(char_range(except, false), com);
+	open_com->add_to_map(char_range('\n'), close_com);
 	com->add_to_map(char_range(except, false), com);
-
-	comments_node* close_com = new comments_node(true, token_);
-	com->add_to_map(char_range('\n'), close_com);
+	com->add_to_map(char_range(except, true), close_com);
 }
 
 void scanner_node::get_multiple_comments(scanner_node* parent) {
 
-	vector<char> except = { '*', '\\' };
+	vector<char> except_asterisk = { '*' };
+	vector<char> except_asterisk_and_bs = { '*', '\\' };
 
-	comments_node* open_com = new comments_node(false, token_);
-	add_to_map(parent, '*', open_com);
-
+	comments_node* open2_com = new comments_node(false, token_);
 	comments_node* com = new comments_node(false, token_);
-	add_to_map(open_com, char_range(except, false), com);
-	add_to_map(com, char_range(except, false), com);
-
-	comments_node* close1_com = new comments_node(false, token_);
-	add_to_map(com, char_range('*'), close1_com);
-	add_to_map(open_com, char_range('*'), close1_com);
-	add_to_map(close1_com, char_range(except, false), com);
-	add_to_map(close1_com, char_range('*'), close1_com);
-
+	comments_node* asterisk_com = new comments_node(false, token_);
 	comments_node* close2_com = new comments_node(true, token_);
-	add_to_map(close1_com, char_range('/'), close2_com);
+
+	add_to_map(parent, '*', open2_com);
+	
+	open2_com->add_to_map(char_range(except_asterisk, false), com);
+	open2_com->add_to_map(char_range('*'), asterisk_com);
+
+	com->add_to_map(char_range(except_asterisk, false), com);
+	com->add_to_map(char_range('*'), asterisk_com);
+	
+	asterisk_com->add_to_map(char_range(except_asterisk_and_bs, false), com);
+	asterisk_com->add_to_map(char_range('*'), asterisk_com);
+
+	asterisk_com->add_to_map(char_range('/'), close2_com);
 }
 
 scanner_node* scanner_node::add_pctr(char ch, token_punctuator_value value) {
@@ -506,10 +509,9 @@ void identifiers_node::process_char(char ch) {
 scanner_node::token* identifiers_node::finish_processing() {
 	token_->value.string_value = (char*)token_->text.c_str();
 
-	set<char*>::iterator it;
+	set<string>::iterator it;
 	it = keywords.find(token_->value.string_value);
 	if (it != keywords.end()) {
-		cout << "FOUND";
 		token_->type = TOKEN_KEYWORD;
 	} else 
 		token_->type = TOKEN_IDENTIFIER;

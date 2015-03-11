@@ -1,0 +1,14 @@
+keyword [1, 1]	int	int
+identifier [1, 5]	main	main
+punctuator [1, 9]	(	braceL
+punctuator [1, 10]	)	braceR
+punctuator [1, 12]	{	curlybraceL
+keyword [2, 2]	int	int
+identifier [2, 6]	a	a
+punctuator [2, 8]	=	assign
+integer [2, 10]	10	10
+punctuator [2, 12]	;	semicolon
+keyword [3, 2]	return	return
+integer [3, 9]	0	0
+punctuator [3, 10]	;	semicolon
+punctuator [4, 1]	}	curlybraceR

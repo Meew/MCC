@@ -1,0 +1,9 @@
+double [1, 1]	.2267	0.2267
+double [2, 1]	.1e23	1e+022
+double [3, 1]	1.e12	1e+012
+double [4, 1]	1e-1	0.1
+double [5, 1]	013e12	1.3e+013
+double [6, 1]	01e13	1e+013
+integer [7, 1]	0x2	2
+double [8, 1]	.12	0.12
+double [9, 1]	.0e1	0

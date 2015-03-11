@@ -1,0 +1,9 @@
+string [1, 1]	"vasya"	vasya
+char [2, 1]	'v'	v
+char [3, 1]	'\t'		
+string [4, 1]	"\n"	
+
+string [5, 1]	"gregory\n"	gregory
+
+string [6, 1]	""	
+string [7, 1]	"ono\trabotaet!"	ono	rabotaet!
