@@ -1,0 +1,7 @@
+keyword    1	1	return	return
+identifier 1	2	identifier	identifier
+punctuator 1	3	?	ternaryQ
+integer    1	4	90	90
+real       1	5	3.1415	3.1415
+char       1	6	'q'	q
+string     1	7	"qwerty"	qwerty

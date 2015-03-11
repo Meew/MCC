@@ -1,0 +1,10 @@
+keyword 1	1	int	int
+keyword 5	1	main	main
+punctuator 9	1	(	braceL
+punctuator 10	1	)	braceR
+punctuator 12	1	{	curlybraceL
+keyword 2	2	return	return
+int 9	2	0	0
+punctuator 10	2	;	semicolon
+punctuator 1	3	}	curlybraceR
+ 
