@@ -10,15 +10,17 @@ public:
 	void assign_file(const char*);
 
 	int next();
-	void process_all();
 	scanner_node::token get();
+
+	class bad_token {};
+
+	scanner_node::token::position get_position();
 
 private:
 	scanner_node::token::position curr_pos_;
 
 	scanner_node* node_;
-
-	class bad_token {};
+	
 	scanner_node::token* token_;
 
 	class bad_file {};

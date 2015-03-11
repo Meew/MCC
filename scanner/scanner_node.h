@@ -14,7 +14,7 @@
 
 using namespace std;
 
-enum range_type { RANGE_SINGLE, RANGE_BETWEEN, RANGE_EXCEPTION };
+enum range_type { RANGE_SINGLE, RANGE_BETWEEN, RANGE_EXCEPTION, RANGE_ENUM };
 
 enum token_type {
 	TOKEN_UNDEFINED = -1, TOKEN_KEYWORD, TOKEN_IDENTIFIER, TOKEN_PUNCTUATOR,
@@ -129,7 +129,7 @@ public:
 	public:
 		char_range(char ch);
 		char_range(char ch1, char ch2);
-		char_range(vector<char> chs);
+		char_range(vector<char> chs, bool);
 
 		bool is_containing(char);
 
@@ -153,9 +153,12 @@ public:
 	virtual token* finish_processing();
 
 	map<char, scanner_node*> char_to_node;
+
 protected:
 	token* token_;
 	bool can_be_stripped_;
+
+	virtual char cast_escape(char);
 
 private:
 	void add_node_to_children(scanner_node*, scanner_node*); // add second to first node's children
@@ -172,8 +175,8 @@ private:
 	void get_numbers_after_dot(scanner_node*);
 	void get_e(scanner_node*);
 
-	void get_string();
 	void get_char();
+	void get_string();
 
 	scanner_node* add_pctr(char, token_punctuator_value); //pctr - punctuator
 	scanner_node* add_to_pctr(scanner_node*, char, token_punctuator_value);

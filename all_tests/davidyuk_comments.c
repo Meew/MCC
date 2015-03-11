@@ -1,4 +1,0 @@
-//qweqwe
-/*qweqwe*/
-//qweqwe/*qweqwe*/
-//

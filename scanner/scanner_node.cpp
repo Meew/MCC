@@ -26,6 +26,7 @@ std::ostream& operator << (std::ostream& out, scanner_node::token token_) {
 	switch (token_.type) {
 		case     TOKEN_INTEGER:    return out << token_.get_type_name() << " " << token_.pos << "\t" << token_.text << "\t" << token_.value.integer_value;
 		case     TOKEN_DOUBLE:     return out << token_.get_type_name() << " " << token_.pos << "\t" << token_.text << "\t" << token_.value.double_value;
+		case     TOKEN_CHAR:	   return out << token_.get_type_name() << " " << token_.pos << "\t" << token_.text << "\t" << token_.value.char_value;
 		default:                   return out << token_.get_type_name() << " " << token_.pos << "\t" << token_.text << "\t" << token_.value.string_value;
 	}
 }
@@ -55,7 +56,7 @@ int scanner_node::token::position::operator == (const scanner_node::token::posit
 }
 
 std::ostream& operator << (std::ostream& out, const scanner_node::token::position& position_) {
-	return out << position_.row << "\t" << position_.col;
+	return out << position_.col << "\t" << position_.row;
 }
 
 void scanner_node::token::feel_map() {
@@ -95,7 +96,12 @@ void scanner_node::add_to_map(scanner_node* node, char_range key, scanner_node* 
 		}
 		break;
 	}
-
+	case RANGE_ENUM: {
+		for (unsigned int i = 0; i < key.chars.size(); i++) { // rewrite array chars to set
+			node->char_to_node[key.chars[i]] = value;
+		}
+		break;
+	}
 	default: break;
 	}
 }
@@ -111,7 +117,13 @@ scanner_node::char_range::char_range(char ch1, char ch2) : type(RANGE_BETWEEN) {
 	chars.push_back(ch1);
 	chars.push_back(ch2);
 }
-scanner_node::char_range::char_range(vector<char> chs) : chars(chs), type(RANGE_EXCEPTION) {}
+scanner_node::char_range::char_range(vector<char> chs, bool b) : chars(chs) {
+	if (b == true) {
+		type = RANGE_ENUM;
+	} else if (b == false) {
+		type = RANGE_EXCEPTION;
+	}
+}
 
 bool scanner_node::char_range::is_containing(char ch) {
 	switch (type) {
@@ -130,6 +142,17 @@ bool scanner_node::char_range::is_containing(char ch) {
 		for (unsigned int i = 0; i < chars.size(); i++) {
 			if (chars[i] == ch) {
 				checked = false;
+				break;
+			}
+		}
+		return checked;
+		break;
+	}
+	case RANGE_ENUM: {
+		bool checked = false;
+		for (unsigned int i = 0; i < chars.size(); i++) {
+			if (chars[i] == ch) {
+				checked = true;
 				break;
 			}
 		}
@@ -158,12 +181,8 @@ void scanner_node::feel_the_node() {
 	get_identifiers();
 	get_numbers();
 	get_punctuators();
-
-#if 0
-	list_of_nodes.push_back(get_char());
-	list_of_nodes.push_back(get_string());
-
-#endif
+	get_char();
+	get_string();
 }
 
 scanner_node::token* scanner_node::get_token() {
@@ -262,86 +281,61 @@ void scanner_node::get_e(scanner_node* parent) {
 	add_to_map(minus, char_range('0', '9'), nums);
 }
 
-#if 0
 
-
-scanner_node* scanner_node::get_char() {
+void scanner_node::get_char() {
 	char_node* c_fc = new char_node(false, token_); //c_fc - char's first char
-	add_char_range_to_node(c_fc, char_range('\''));
+	add_to_map(char_range('\''), c_fc);
+
 	char_node* c_lc = new char_node(true, token_); //c_lc - char's last char
-	add_char_range_to_node(c_lc, char_range('\''));
-
-	add_node_to_children(c_fc, c_lc);
-
 
 	char_node* c_bs = new char_node(false, token_); //c_bs - char's backslash
-	add_char_range_to_node(c_bs, char_range('\\'));
-
-	add_node_to_children(c_fc, c_bs);
-
-	vector<char> chars_exception;
-	chars_exception.push_back('\'');
-	chars_exception.push_back('\\');
-	char_node* c_wo = new char_node(false, token_); //s_bs - string's backslash
-	add_char_range_to_node(c_wo, char_range(chars_exception));
-
-	add_node_to_children(c_fc, c_wo);
-
-	add_node_to_children(c_wo, c_lc);
+	c_fc->add_to_map(char_range('\\'), c_bs);
 
 
-	vector<char> no_chars;
-	char_node* c_all = new char_node(false, token_);
-	add_char_range_to_node(c_all, char_range(no_chars));
+	char_node* c_afterbs = new char_node(false, token_); //c_afterbs - char's after backslash
+	vector<char> excape_chars = { '\'', '"', '?', '\\', '0', 'a', 'b', 'f',	'n', 'r', 't', 'v' };
 
-	add_node_to_children(c_bs, c_all);
-	add_node_to_children(c_all, c_lc);
+	c_bs->add_to_map(char_range(excape_chars, true), c_afterbs); //true for enum
+	c_afterbs->add_to_map(char_range('\''), c_lc);
+	
 
-	return c_fc;
+	char_node* c_nc = new char_node(false, token_); // c_nc - char's "normal" char
+	vector<char> exception_chars = { '\\', '\'', '\n'};
+
+	c_fc->add_to_map(char_range(exception_chars, false), c_nc); 
+	c_nc->add_to_map(char_range('\''), c_lc);
 }
 
-scanner_node* scanner_node::get_string() {
+void scanner_node::get_string() { // repeating code. IM SO SORRY
 	string_node* s_fc = new string_node(false, token_); //s_fc - string's first char
-	add_char_range_to_node(s_fc, char_range('\"'));
+	add_to_map(char_range('\"'), s_fc);
+
 	string_node* s_lc = new string_node(true, token_); //s_lc - string's last char
-	add_char_range_to_node(s_lc, char_range('\"'));
 
-	add_node_to_children(s_fc, s_lc);
-
+	s_fc->add_to_map(char_range('\"'), s_lc);
 
 	string_node* s_bs = new string_node(false, token_); //s_bs - string's backslash
-	add_char_range_to_node(s_bs, char_range('\\'));
-
-	add_node_to_children(s_fc, s_bs);
+	s_fc->add_to_map(char_range('\\'), s_bs);
 
 
-	vector<char> chars_exception;
-	chars_exception.push_back('\"');
-	chars_exception.push_back('\\');
-	string_node* s_wo = new string_node(false, token_); //s_bs - string's backslash
-	add_char_range_to_node(s_wo, char_range(chars_exception));
+	string_node* s_afterbs = new string_node(false, token_); //s_afterbs - string's after backslash
+	vector<char> excape_chars = { '\'', '"', '?', '\\', '0', 'a', 'b', 'f', 'n', 'r', 't', 'v' };
 
-	add_node_to_children(s_fc, s_wo);
-
-	add_node_to_children(s_wo, s_bs);
-	add_node_to_children(s_wo, s_wo);
-	add_node_to_children(s_wo, s_lc);
+	s_bs->add_to_map(char_range(excape_chars, true), s_afterbs); //true for enum
+	s_afterbs->add_to_map(char_range('\\'), s_bs);
+	s_afterbs->add_to_map(char_range('\"'), s_lc);
 
 
-	vector<char> no_chars;
-	string_node* s_all = new string_node(false, token_);
-	s_all->list_of_chars.push_back(char_range(no_chars));
+	string_node* s_nc = new string_node(false, token_); // s_nc - string's "normal" char
+	vector<char> exception_chars = { '\\', '\"', '\n' }; // '\n'?
 
+	s_fc->add_to_map(char_range(exception_chars, false), s_nc);
+	s_afterbs->add_to_map(char_range(exception_chars, false), s_nc);
+	s_nc->add_to_map(char_range('\\'), s_bs);
+	s_nc->add_to_map(char_range(exception_chars, false), s_nc);
+	s_nc->add_to_map(char_range('\"'), s_lc);
 
-	add_node_to_children(s_all, s_wo);
-	add_node_to_children(s_all, s_bs);
-	add_node_to_children(s_all, s_lc);
-
-	add_node_to_children(s_bs, s_all);
-
-	return s_fc;
 }
-#endif
 
 void scanner_node::get_single_comments(scanner_node* parent) {
 	vector<char> except;
@@ -351,28 +345,30 @@ void scanner_node::get_single_comments(scanner_node* parent) {
 	comments_node* open_com = new comments_node(true, token_); //open com
 	add_to_map(parent, '/', open_com);
 
-	comments_node* com = new comments_node(false, token_);
-	add_to_map(open_com, char_range(except), com);
-	add_to_map(com, char_range(except), com);
+	comments_node* com = new comments_node(true, token_);
+	open_com->add_to_map(char_range(except, false), com);
+	com->add_to_map(char_range(except, false), com);
 
 	comments_node* close_com = new comments_node(true, token_);
-	add_to_map(com, char_range('\n'), close_com);
+	com->add_to_map(char_range('\n'), close_com);
 }
 
 void scanner_node::get_multiple_comments(scanner_node* parent) {
 
-	vector<char> except;
-	except.push_back('*');
+	vector<char> except = { '*', '\\' };
 
 	comments_node* open_com = new comments_node(false, token_);
 	add_to_map(parent, '*', open_com);
 
 	comments_node* com = new comments_node(false, token_);
-	add_to_map(open_com, char_range(except), com);
-	add_to_map(com, char_range(except), com);
+	add_to_map(open_com, char_range(except, false), com);
+	add_to_map(com, char_range(except, false), com);
 
 	comments_node* close1_com = new comments_node(false, token_);
 	add_to_map(com, char_range('*'), close1_com);
+	add_to_map(open_com, char_range('*'), close1_com);
+	add_to_map(close1_com, char_range(except, false), com);
+	add_to_map(close1_com, char_range('*'), close1_com);
 
 	comments_node* close2_com = new comments_node(true, token_);
 	add_to_map(close1_com, char_range('/'), close2_com);
@@ -642,6 +638,48 @@ scanner_node::token* exp_double_node::finish_processing() {
 }
 
 
+char scanner_node::cast_escape(char ch) {
+	switch (ch) {
+		case '\'': return 0x27;
+		case '"':  return 0x22;
+		case '?':  return 0x3f;
+		case '\\': return 0x5c;
+		case '0':  return 0x00;
+		case 'a':  return 0x07;
+		case 'b':  return 0x08;
+		case 'f':  return 0x0c;
+		case 'n':  return 0x0a;
+		case 'r':  return 0x0d;
+		case 't':  return 0x09;
+		case 'v':  return 0x0b;
+		default: {
+			cerr << "Bad escape char." << endl;
+			exit(1);
+		}
+	}
+}
+
+
+char_node::char_node(bool can_be_stripped, token* token) :
+scanner_node(can_be_stripped, token) {}
+
+void char_node::process_char(char ch) {
+	token_->text += ch;
+}
+
+scanner_node::token* char_node::finish_processing() {
+	if (token_->text[1] != '\\') {
+		token_->value.char_value = token_->text[1];
+	}
+	else {
+		token_->value.char_value = cast_escape(token_->text[2]); //cast from escape
+	}
+
+	token_->type = TOKEN_CHAR;
+	return get_token();
+}
+
+
 string_node::string_node(bool can_be_stripped, token* token):
 scanner_node(can_be_stripped, token) {}
 
@@ -655,7 +693,7 @@ scanner_node::token* string_node::finish_processing() {
 		if (token_->text[i] != '\\') {
 			string += token_->text[i];
 		} else {
-			string += token_->text[i+1]; //cast from escape
+			string += cast_escape(token_->text[i + 1]); //cast from escape
 			i++;
 		}
 	}
@@ -668,25 +706,6 @@ scanner_node::token* string_node::finish_processing() {
 
 	
 	token_->type = TOKEN_STRING;
-	return get_token();
-}
-
-                          
-char_node::char_node(bool can_be_stripped, token* token):
-scanner_node(can_be_stripped, token) {}
-
-void char_node::process_char(char ch) {
-	token_->text += ch;
-}
-
-scanner_node::token* char_node::finish_processing() {
-	if (token_->text[1] != '\\') {
-		token_->value.char_value = token_->text[1];
-	} else {
-		token_->value.char_value = token_->text[2]; //cast from escape
-	}
-
-	token_->type = TOKEN_CHAR;
 	return get_token();
 }
 

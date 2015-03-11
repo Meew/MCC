@@ -55,6 +55,9 @@ int mcc_scanner::next() {
 			if (ch == '\n') curr_pos_.col--;
 			else curr_pos_.row--;
 
+			if (token_->type == TOKEN_COMMENT) {
+				if (next() == 0) return 0;
+			}
 			return 1;
 		}
 		else {
@@ -63,20 +66,10 @@ int mcc_scanner::next() {
 	}
 }
 
-void mcc_scanner::process_all() {
-	try {
-		while (true) {
-			if (next() == 0) {
-				break;
-			}
-			cout << get() << endl;
-		}
-	}
-	catch (mcc_scanner::bad_token) {
-		cerr << "Bad lexeme. Current position - " << curr_pos_ << endl;
-	}
-}
-
 scanner_node::token mcc_scanner::get() {
 	return *token_;
+}
+
+scanner_node::token::position mcc_scanner::get_position() {
+	return curr_pos_;
 }
