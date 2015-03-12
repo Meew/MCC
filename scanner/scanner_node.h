@@ -12,63 +12,11 @@
 #include <set>
 #include <stdexcept>
 
+#include "token.h"
+
 using namespace std;
 
 enum range_type { RANGE_SINGLE, RANGE_BETWEEN, RANGE_EXCEPTION, RANGE_ENUM };
-
-enum token_type {
-	TOKEN_UNDEFINED = -1, TOKEN_KEYWORD, TOKEN_IDENTIFIER, TOKEN_PUNCTUATOR,
-	TOKEN_INTEGER, TOKEN_DOUBLE, TOKEN_CHAR, TOKEN_STRING, TOKEN_COMMENT
-};
-
-enum token_punctuator_value {
-	PUNCTUATOR_curlybraceL,
-	PUNCTUATOR_curlybraceR,
-	PUNCTUATOR_semicolon,
-	PUNCTUATOR_comma,
-	PUNCTUATOR_braceL,
-	PUNCTUATOR_braceR,
-	PUNCTUATOR_ternaryQ,
-	PUNCTUATOR_ternaryC,
-	PUNCTUATOR_squarebraceL,
-	PUNCTUATOR_squarebraceR,
-	PUNCTUATOR_xor,
-	PUNCTUATOR_xorEqual,
-	PUNCTUATOR_asterisk,
-	PUNCTUATOR_asteriskEqual,
-	PUNCTUATOR_notBin,
-	PUNCTUATOR_not,
-	PUNCTUATOR_notEqual,
-	PUNCTUATOR_assign,
-	PUNCTUATOR_equal,
-	PUNCTUATOR_mod,
-	PUNCTUATOR_modEqual,
-	PUNCTUATOR_or,
-	PUNCTUATOR_orBin,
-	PUNCTUATOR_orBinEqual,
-	PUNCTUATOR_andBin,
-	PUNCTUATOR_and,
-	PUNCTUATOR_andBinEqual,
-	PUNCTUATOR_plus,
-	PUNCTUATOR_increment,
-	PUNCTUATOR_plusEqual,
-	PUNCTUATOR_minus,
-	PUNCTUATOR_fieldPtr,
-	PUNCTUATOR_decrement,
-	PUNCTUATOR_minusEqual,
-	PUNCTUATOR_less,
-	PUNCTUATOR_shiftL,
-	PUNCTUATOR_lessEqual,
-	PUNCTUATOR_shiftLEqual,
-	PUNCTUATOR_greater,
-	PUNCTUATOR_shiftR,
-	PUNCTUATOR_greaterEqual,
-	PUNCTUATOR_shiftREqual,
-	PUNCTUATOR_div,
-	PUNCTUATOR_divEqual,
-	PUNCTUATOR_field
-};
-
 
 class scanner_node {
 public:
@@ -81,48 +29,7 @@ public:
 		string s_exp;
 	};
 
-public:
-	class token {
-	public:
-		token();
-
-		string get_type_name();
-
-		void reset();
-
-		friend std::ostream& operator << (std::ostream&, token);
-
-		class position {
-		public:
-			position();
-			position(int p1, int p2);
-			position(const position& position_);
-
-			position& operator = (const position& position_);
-			int operator == (const position& position_);
-			friend std::ostream& operator << (std::ostream& out, const position& position_);
-
-			int col;
-			int row;
-		};
-
-		token_type type;
-		union {
-			int integer_value;
-			double double_value;
-			char* string_value;
-			char char_value;
-		} value;
-		position pos;
-		string text;
-
-		token_parts parts_;
-
-	private:
-		void feel_map();
-
-		map<token_type, string> enum_to_name;
-	};
+	token_parts parts_;
 
 public:
 	class char_range {

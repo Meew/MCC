@@ -1,28 +1,6 @@
 #include "scanner_node.h"
 
-scanner_node::token::token() : type(TOKEN_UNDEFINED), pos(1, 0), text("") {
-	feel_map();
-}
-
-string scanner_node::token::get_type_name() {
-	int reserved_for_typename = 10;
-
-	string type_name = enum_to_name[type];
-	for (unsigned int i = 0; i < reserved_for_typename - type_name.size(); i++) {
-		type_name += " ";
-	}
-
-	return enum_to_name[type];
-}
-
-void scanner_node::token::reset() {
-	text.clear();
-	value.char_value = '\0';
-	pos = position();
-	type = TOKEN_UNDEFINED;
-}
-
-std::ostream& operator << (std::ostream& out, scanner_node::token token_) {
+std::ostream& operator << (std::ostream& out, token token_) {
 	std::ostream& temp = out << token_.get_type_name() << " " << token_.pos << "\t" << token_.text << "\t";
 	switch (token_.type) {
 		case     TOKEN_INTEGER:    return temp << token_.value.integer_value;
@@ -40,36 +18,6 @@ void scanner_node::token_parts::clear() {
 	s_exp.clear();
 }
 
-scanner_node::token::position::position() : col(1), row(0) {}
-
-scanner_node::token::position::position(int p1, int p2) : col(p1), row(p2) {}
-
-scanner_node::token::position::position(const position& position_) : col(position_.col), row(position_.row) {}
-
-scanner_node::token::position& scanner_node::token::position::operator = (const token::position& position_) {
-	col = position_.col;
-	row = position_.row;
-	return *this;
-}
-
-int scanner_node::token::position::operator == (const scanner_node::token::position& position_) {
-	return (col == position_.col && row == position_.row);
-}
-
-std::ostream& operator << (std::ostream& out, const scanner_node::token::position& position_) {
-	return out << "[" <<position_.col << ", " << position_.row << "]";
-}
-
-void scanner_node::token::feel_map() {
-	enum_to_name[TOKEN_KEYWORD] = "keyword";
-	enum_to_name[TOKEN_IDENTIFIER] = "identifier";
-	enum_to_name[TOKEN_PUNCTUATOR] = "punctuator";
-	enum_to_name[TOKEN_INTEGER] = "integer";
-	enum_to_name[TOKEN_DOUBLE] = "double";
-	enum_to_name[TOKEN_CHAR] = "char";
-	enum_to_name[TOKEN_STRING] = "string";
-	enum_to_name[TOKEN_COMMENT] = "comment";
-}
 
 void scanner_node::add_to_map(scanner_node* node, char_range key, scanner_node* value) {
 	switch (key.type) {
@@ -186,7 +134,7 @@ void scanner_node::feel_the_node() {
 	get_string();
 }
 
-scanner_node::token* scanner_node::get_token() {
+token* scanner_node::get_token() {
 	return token_;
 }
 
@@ -410,48 +358,48 @@ void scanner_node::get_punctuators() {
 	get_numbers_after_dot(temp); // adding numbers starting with dot
 
 	temp = add_pctr('*', PUNCTUATOR_asterisk);
-	add_to_pctr(temp, '=', PUNCTUATOR_asteriskEqual);
+	add_to_pctr(temp, '=', PUNCTUATOR_asteriskAssign);
 
 	temp = add_pctr('/', PUNCTUATOR_div);
-	add_to_pctr(temp, '=', PUNCTUATOR_divEqual);
+	add_to_pctr(temp, '=', PUNCTUATOR_divAssign);
 	get_single_comments(temp); //adding comments
 	get_multiple_comments(temp);
 
 	temp = add_pctr('%', PUNCTUATOR_mod);
-	add_to_pctr(temp, '=', PUNCTUATOR_modEqual);
+	add_to_pctr(temp, '=', PUNCTUATOR_modAssign);
 
 	temp = add_pctr('!', PUNCTUATOR_not);
 	add_to_pctr(temp, '=', PUNCTUATOR_notEqual);
 
 	temp = add_pctr('^', PUNCTUATOR_xor);
-	add_to_pctr(temp, '=', PUNCTUATOR_xorEqual);
+	add_to_pctr(temp, '=', PUNCTUATOR_xorAssign);
 
 	temp = add_pctr('|', PUNCTUATOR_orBin);
-	add_to_pctr(temp, '=', PUNCTUATOR_orBinEqual);
+	add_to_pctr(temp, '=', PUNCTUATOR_orBinAssign);
 	add_to_pctr(temp, '|', PUNCTUATOR_or);
 
 	temp = add_pctr('&', PUNCTUATOR_andBin);
-	add_to_pctr(temp, '=', PUNCTUATOR_andBinEqual);
+	add_to_pctr(temp, '=', PUNCTUATOR_andBinAssign);
 	add_to_pctr(temp, '&', PUNCTUATOR_and);
 
 	temp = add_pctr('+', PUNCTUATOR_plus);
 	add_to_pctr(temp, '+', PUNCTUATOR_increment);
-	add_to_pctr(temp, '=', PUNCTUATOR_plusEqual);
+	add_to_pctr(temp, '=', PUNCTUATOR_plusAssign);
 
 	temp = add_pctr('-', PUNCTUATOR_minus);
 	add_to_pctr(temp, '-', PUNCTUATOR_decrement);
-	add_to_pctr(temp, '=', PUNCTUATOR_minusEqual);
+	add_to_pctr(temp, '=', PUNCTUATOR_minusAssign);
 	add_to_pctr(temp, '>', PUNCTUATOR_fieldPtr);
 
 	temp = add_pctr('<', PUNCTUATOR_less);
 	add_to_pctr(temp, '=', PUNCTUATOR_lessEqual);
 	temp = add_to_pctr(temp, '<', PUNCTUATOR_shiftL);
-	add_to_pctr(temp, '=', PUNCTUATOR_shiftLEqual);
+	add_to_pctr(temp, '=', PUNCTUATOR_shiftLAssign);
 
 	temp = add_pctr('>', PUNCTUATOR_greater);
 	add_to_pctr(temp, '=', PUNCTUATOR_greaterEqual);
 	temp = add_to_pctr(temp, '>', PUNCTUATOR_shiftR);
-	add_to_pctr(temp, '=', PUNCTUATOR_shiftREqual);
+	add_to_pctr(temp, '=', PUNCTUATOR_shiftRAssign);
 
 	temp = add_pctr('=', PUNCTUATOR_assign);
 	add_to_pctr(temp, '=', PUNCTUATOR_equal);
@@ -460,7 +408,9 @@ void scanner_node::get_punctuators() {
 
 scanner_node* scanner_node::process_and_get_new_child(char ch) {
 	try {
-		return char_to_node.at(ch);
+		scanner_node* temp = char_to_node.at(ch);
+		temp->parts_ = parts_;
+		return temp;
 	}
 	catch (const std::out_of_range& oor) {
 		return 0;
@@ -473,7 +423,7 @@ bool scanner_node::can_finish() {
 	return can_be_stripped_;
 }
 
-scanner_node::token* scanner_node::finish_processing() {
+token* scanner_node::finish_processing() {
 	return get_token();
 }
 
@@ -488,7 +438,6 @@ void identifiers_node::initialize_keywords() {
 	keywords.insert("char");
 	keywords.insert("const");
 	keywords.insert("continue");
-	keywords.insert("do");
 	keywords.insert("double");
 	keywords.insert("else");
 	keywords.insert("for");
@@ -506,7 +455,7 @@ void identifiers_node::process_char(char ch) {
 	token_->text += ch;
 }
 
-scanner_node::token* identifiers_node::finish_processing() {
+token* identifiers_node::finish_processing() {
 	token_->value.string_value = (char*)token_->text.c_str();
 
 	set<string>::iterator it;
@@ -526,7 +475,7 @@ int_node::int_node(bool can_be_stripped, token* token):
 scanner_node(can_be_stripped, token) {}
 
 void int_node::process_char(char ch) {
-	token_->parts_.s_integer += ch;
+	parts_.s_integer += ch;
 
 	token_->text += ch;
 }
@@ -553,22 +502,22 @@ int str_to_int_with_scale(string string, int scale) {
 	return res;
 }
 
-scanner_node::token* int_node::finish_processing() {
-	if (token_->parts_.s_integer[0] == '0') {
-		if (token_->parts_.s_integer[1] == 'x' || token_->parts_.s_integer[1] == 'X') {
-			token_->parts_.s_integer.erase(0, 2);
-			token_->value.integer_value = str_to_int_with_scale(token_->parts_.s_integer, 16);
+token* int_node::finish_processing() {
+	if (parts_.s_integer[0] == '0') {
+		if (parts_.s_integer[1] == 'x' || parts_.s_integer[1] == 'X') {
+			parts_.s_integer.erase(0, 2);
+			token_->value.integer_value = str_to_int_with_scale(parts_.s_integer, 16);
 		} else {
-			token_->parts_.s_integer.erase(0, 1);
-			token_->value.integer_value = str_to_int_with_scale(token_->parts_.s_integer, 8);
+			parts_.s_integer.erase(0, 1);
+			token_->value.integer_value = str_to_int_with_scale(parts_.s_integer, 8);
 		}
 	} else {
-		token_->value.integer_value = str_to_int_with_scale(token_->parts_.s_integer, 10);
+		token_->value.integer_value = str_to_int_with_scale(parts_.s_integer, 10);
 	}
 
 	token_->type = TOKEN_INTEGER;
 
-	token_->parts_.clear();
+	parts_.clear();
 	return get_token();
 }
 
@@ -579,7 +528,7 @@ dot_double_node::dot_double_node(bool can_be_stripped, token* token):
 int_node(can_be_stripped, token) {}
 
 void dot_double_node::process_char(char ch) {
-	token_->parts_.s_frac += ch;
+	parts_.s_frac += ch;
 
 	token_->text += ch;
 }
@@ -592,16 +541,16 @@ double get_frac(string frac) {
 	return str_to_int_with_scale(frac, 10)* pow(10, power);
 }
 
-scanner_node::token* dot_double_node::finish_processing() {
+token* dot_double_node::finish_processing() {
 	token_->value.double_value = 0.0;
 
-	token_->value.double_value += str_to_int_with_scale(token_->parts_.s_integer, 10);
+	token_->value.double_value += str_to_int_with_scale(parts_.s_integer, 10);
 
-	token_->value.double_value += get_frac(token_->parts_.s_frac);
+	token_->value.double_value += get_frac(parts_.s_frac);
 
 	token_->type = TOKEN_DOUBLE;
 
-	token_->parts_.clear();
+	parts_.clear();
 	return get_token();
 }
 
@@ -610,32 +559,32 @@ exp_double_node::exp_double_node(bool can_be_stripped, token* token):
 dot_double_node(can_be_stripped, token) {}
 
 void exp_double_node::process_char(char ch) {
-	token_->parts_.s_exp += ch;
+	parts_.s_exp += ch;
 
 	token_->text += ch;
 }
 
-scanner_node::token* exp_double_node::finish_processing() {
+token* exp_double_node::finish_processing() {
 	int factor = 1;
 
 	token_->value.double_value = 0.0;
 
-	token_->value.double_value += str_to_int_with_scale(token_->parts_.s_integer, 10);
-	if (!token_->parts_.s_frac.empty()) {
-		token_->value.double_value += get_frac(token_->parts_.s_frac);
+	token_->value.double_value += str_to_int_with_scale(parts_.s_integer, 10);
+	if (!parts_.s_frac.empty()) {
+		token_->value.double_value += get_frac(parts_.s_frac);
 	}
 
-	token_->parts_.s_exp.erase(0, 1); //killing 'e'
-	if (token_->parts_.s_exp[0] == '-') {
+	parts_.s_exp.erase(0, 1); //killing 'e'
+	if (parts_.s_exp[0] == '-') {
 		factor = -1;
-		token_->parts_.s_exp.erase(0, 1); //killing '-'
+		parts_.s_exp.erase(0, 1); //killing '-'
 	}
 
-	token_->value.double_value *= pow(10, factor * str_to_int_with_scale(token_->parts_.s_exp, 10));
+	token_->value.double_value *= pow(10, factor * str_to_int_with_scale(parts_.s_exp, 10));
 
 	token_->type = TOKEN_DOUBLE;
 
-	token_->parts_.clear();
+	parts_.clear();
 	return get_token();
 }
 
@@ -669,7 +618,7 @@ void char_node::process_char(char ch) {
 	token_->text += ch;
 }
 
-scanner_node::token* char_node::finish_processing() {
+token* char_node::finish_processing() {
 	if (token_->text[1] != '\\') {
 		token_->value.char_value = token_->text[1];
 	}
@@ -689,7 +638,7 @@ void string_node::process_char(char ch) {
 	token_->text += ch;
 }
 
-scanner_node::token* string_node::finish_processing() {
+token* string_node::finish_processing() {
 	string string;
 	for (unsigned int i = 1; i < token_->text.size() - 1; i++) {
 		if (token_->text[i] != '\\') {
@@ -730,39 +679,39 @@ void punctuator_node::feel_map() {
 	enum_to_name[PUNCTUATOR_squarebraceL] = "squarebraceL";
 	enum_to_name[PUNCTUATOR_squarebraceR] = "squarebraceR";
 	enum_to_name[PUNCTUATOR_xor] = "xor";
-	enum_to_name[PUNCTUATOR_xorEqual] = "xorEqual";
+	enum_to_name[PUNCTUATOR_xorAssign] = "xorAssign";
 	enum_to_name[PUNCTUATOR_asterisk] = "asterisk";
-	enum_to_name[PUNCTUATOR_asteriskEqual] = "asteriskEqual";
+	enum_to_name[PUNCTUATOR_asteriskAssign] = "asteriskAssign";
 	enum_to_name[PUNCTUATOR_notBin] = "notBin";
 	enum_to_name[PUNCTUATOR_not] = "not";
 	enum_to_name[PUNCTUATOR_notEqual] = "notEqual";
 	enum_to_name[PUNCTUATOR_assign] = "assign";
 	enum_to_name[PUNCTUATOR_equal] = "equal";
 	enum_to_name[PUNCTUATOR_mod] = "mod";
-	enum_to_name[PUNCTUATOR_modEqual] = "modEqual";
+	enum_to_name[PUNCTUATOR_modAssign] = "modAssign";
 	enum_to_name[PUNCTUATOR_or] = "or";
 	enum_to_name[PUNCTUATOR_orBin] = "orBin";
-	enum_to_name[PUNCTUATOR_orBinEqual] = "orBinEqual";
+	enum_to_name[PUNCTUATOR_orBinAssign] = "orBinAssign";
 	enum_to_name[PUNCTUATOR_andBin] = "andBin";
 	enum_to_name[PUNCTUATOR_and] = "and";
-	enum_to_name[PUNCTUATOR_andBinEqual] = "andBinEqual";
+	enum_to_name[PUNCTUATOR_andBinAssign] = "andBinAssign";
 	enum_to_name[PUNCTUATOR_plus] = "plus";
 	enum_to_name[PUNCTUATOR_increment] = "increment";
-	enum_to_name[PUNCTUATOR_plusEqual] = "plusEqual";
+	enum_to_name[PUNCTUATOR_plusAssign] = "plusAssign";
 	enum_to_name[PUNCTUATOR_minus] = "minus";
 	enum_to_name[PUNCTUATOR_fieldPtr] = "fieldPtr";
 	enum_to_name[PUNCTUATOR_decrement] = "decrement";
-	enum_to_name[PUNCTUATOR_minusEqual] = "minusEqual";
+	enum_to_name[PUNCTUATOR_minusAssign] = "minusAssign";
 	enum_to_name[PUNCTUATOR_less] = "less";
 	enum_to_name[PUNCTUATOR_shiftL] = "shiftL";
 	enum_to_name[PUNCTUATOR_lessEqual] = "lessEqual";
-	enum_to_name[PUNCTUATOR_shiftLEqual] = "shiftLEqual";
+	enum_to_name[PUNCTUATOR_shiftLAssign] = "shiftLAssign";
 	enum_to_name[PUNCTUATOR_greater] = "greater";
 	enum_to_name[PUNCTUATOR_shiftR] = "shiftR";
 	enum_to_name[PUNCTUATOR_greaterEqual] = "greaterEqual";
-	enum_to_name[PUNCTUATOR_shiftREqual] = "shiftREqual";
+	enum_to_name[PUNCTUATOR_shiftRAssign] = "shiftRAssign";
 	enum_to_name[PUNCTUATOR_div] = "div";
-	enum_to_name[PUNCTUATOR_divEqual] = "divEqual";
+	enum_to_name[PUNCTUATOR_divAssign] = "divAssign";
 	enum_to_name[PUNCTUATOR_field] = "field";
 }
 
@@ -770,7 +719,7 @@ void punctuator_node::process_char(char ch) {
 	token_->text += ch;
 }
 
-scanner_node::token* punctuator_node::finish_processing() {
+token* punctuator_node::finish_processing() {
 	token_->value.string_value = enum_to_name[value_];
 	token_->type = TOKEN_PUNCTUATOR;
 
@@ -785,7 +734,7 @@ void comments_node::process_char(char ch) {
 	token_->text += ch;
 }
 
-scanner_node::token* comments_node::finish_processing() {
+token* comments_node::finish_processing() {
 	token_->value.string_value = (char*)token_->text.c_str();
 	token_->type = TOKEN_COMMENT;
 	return get_token();

@@ -16,7 +16,8 @@ void show_help() {
 	cout << "This complier was made by Maxim Barsukov! Group B8303a!" << endl << endl;
 
 	cout << "Use -h to get help." << endl;
-	cout << "Use -l to split your code to lexemes." << endl << endl;
+	cout << "Use -l to split your code to lexemes." << endl;
+	cout << "Use -s to parse your code." << endl << endl;
 	
 	return;
 }
@@ -47,6 +48,9 @@ bool analyze_params(int argc, char* argv[]) {
 			catch (mcc_scanner::bad_token) {
 				cerr << "Bad lexeme. Current position - " << scanner.get_position() << endl;
 			}
+		} else if (argv[1][1] == 's') {
+			mcc_scanner scanner(argv[2]);
+			//mcc_parser parser(&scanner, ...);
 		} else {
 			cerr << "Error: Unknown argument." << endl;
 		}

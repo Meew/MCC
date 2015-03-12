@@ -1,7 +1,7 @@
 #include "mcc_scanner.h"
 
 mcc_scanner::mcc_scanner(const char* filename): eof_found(false) {
-	token_ = new scanner_node::token();
+	token_ = new token();
 	node_ = new scanner_node(token_);
 
 	try {
@@ -66,10 +66,10 @@ int mcc_scanner::next() {
 	}
 }
 
-scanner_node::token mcc_scanner::get() {
+token mcc_scanner::get() {
 	return *token_;
 }
 
-scanner_node::token::position mcc_scanner::get_position() {
+token::position mcc_scanner::get_position() {
 	return curr_pos_;
 }

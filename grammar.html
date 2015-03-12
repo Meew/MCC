@@ -1,0 +1,455 @@
+<html>
+<head>
+<title>MCC-grammar</title>
+
+</head><body>
+
+<h1>MCC-grammar</h1>
+
+<p>
+<hr>
+<pre>
+%token <a href="#check-type">IDENTIFIER</a> <a href="#CONSTANT">CONSTANT</a> <a href="#STRING-LITERAL">STRING_LITERAL</a>
+%token <a href="#PTR-OP">PTR_OP</a> <a href="#INC-OP">INC_OP</a> <a href="#DEC-OP">DEC_OP</a> <a href="#LEFT-OP">LEFT_OP</a> <a href="#RIGHT-OP">RIGHT_OP</a> <a href="#LE-OP">LE_OP</a> <a href="#GE-OP">GE_OP</a> <a href="#EQ-OP">EQ_OP</a> <a href="#NE-OP">NE_OP</a>
+%token <a href="#AND-OP">AND_OP</a> <a href="#OR-OP">OR_OP</a> <a href="#MUL-ASSIGN">MUL_ASSIGN</a> <a href="#DIV-ASSIGN">DIV_ASSIGN</a> <a href="#MOD-ASSIGN">MOD_ASSIGN</a> <a href="#ADD-ASSIGN">ADD_ASSIGN</a>
+%token <a href="#SUB-ASSIGN">SUB_ASSIGN</a> <a href="#LEFT-ASSIGN">LEFT_ASSIGN</a> <a href="#RIGHT-ASSIGN">RIGHT_ASSIGN</a> <a href="#AND-ASSIGN">AND_ASSIGN</a>
+%token <a href="#XOR-ASSIGN">XOR_ASSIGN</a> <a href="#OR-ASSIGN">OR_ASSIGN</a> <a href="#check-type">TYPE_NAME</a>
+
+%token <a href="#TYPEDEF">TYPEDEF</a>
+
+%token <a href="#CHAR">CHAR</a> <a href="#INT">INT</a> <a href="#DOUBLE">DOUBLE</a> <a href="#CONST">CONST</a> <a href="#VOID">VOID</a>
+
+%token <a href="#STRUCT">STRUCT</a> 
+
+<a href="#IF">IF</a> <a href="#ELSE">ELSE</a> <a href="#WHILE">WHILE</a> <a href="#FOR">FOR</a> <a href="#CONTINUE">CONTINUE</a> <a href="#BREAK">BREAK</a> <a href="#RETURN">RETURN</a>
+
+%start <a href="#translation-unit">translation_unit</a>
+
+%%
+
+<a name="primary-expression">primary_expression</a>
+	: <a href="#check-type">IDENTIFIER</a>
+	| <a href="#CONSTANT">CONSTANT</a>
+	| <a href="#STRING-LITERAL">STRING_LITERAL</a>
+	| '(' <a href="#expression">expression</a> ')'
+	;
+
+<a name="postfix-expression">postfix_expression</a>
+	: <a href="#primary-expression">primary_expression</a>
+	| postfix_expression '[' <a href="#expression">expression</a> ']'
+	| postfix_expression '(' ')'
+	| postfix_expression '(' <a href="#argument-expression-list">argument_expression_list</a> ')'
+	| postfix_expression '.' <a href="#check-type">IDENTIFIER</a>
+	| postfix_expression <a href="#PTR-OP">PTR_OP</a> <a href="#check-type">IDENTIFIER</a>
+	| postfix_expression <a href="#INC-OP">INC_OP</a>
+	| postfix_expression <a href="#DEC-OP">DEC_OP</a>
+	;
+
+<a name="argument-expression-list">argument_expression_list</a>
+	: <a href="#assignment-expression">assignment_expression</a>
+	| argument_expression_list ',' <a href="#assignment-expression">assignment_expression</a>
+	;
+
+<a name="unary-expression">unary_expression</a>
+	: <a href="#postfix-expression">postfix_expression</a>
+	| <a href="#INC-OP">INC_OP</a> unary_expression
+	| <a href="#DEC-OP">DEC_OP</a> unary_expression
+	| <a href="#unary-operator">unary_operator</a> <a href="#cast-expression">cast_expression</a>
+	;
+
+<a name="unary-operator">unary_operator</a>
+	: '&amp;'
+	| '*'
+	| '+'
+	| '-'
+	| '~'
+	| '!'
+	;
+
+<a name="cast-expression">cast_expression</a>
+	: <a href="#unary-expression">unary_expression</a>
+	| '(' <a href="#type-name">type_name</a> ')' cast_expression
+	;
+
+<a name="multiplicative-expression">multiplicative_expression</a>
+	: <a href="#cast-expression">cast_expression</a>
+	| multiplicative_expression '*' <a href="#cast-expression">cast_expression</a>
+	| multiplicative_expression '/' <a href="#cast-expression">cast_expression</a>
+	| multiplicative_expression '%' <a href="#cast-expression">cast_expression</a>
+	;
+
+<a name="additive-expression">additive_expression</a>
+	: <a href="#multiplicative-expression">multiplicative_expression</a>
+	| additive_expression '+' <a href="#multiplicative-expression">multiplicative_expression</a>
+	| additive_expression '-' <a href="#multiplicative-expression">multiplicative_expression</a>
+	;
+
+<a name="shift-expression">shift_expression</a>
+	: <a href="#additive-expression">additive_expression</a>
+	| shift_expression <a href="#LEFT-OP">LEFT_OP</a> <a href="#additive-expression">additive_expression</a>
+	| shift_expression <a href="#RIGHT-OP">RIGHT_OP</a> <a href="#additive-expression">additive_expression</a>
+	;
+
+<a name="relational-expression">relational_expression</a>
+	: <a href="#shift-expression">shift_expression</a>
+	| relational_expression '&lt;' <a href="#shift-expression">shift_expression</a>
+	| relational_expression '&gt;' <a href="#shift-expression">shift_expression</a>
+	| relational_expression <a href="#LE-OP">LE_OP</a> <a href="#shift-expression">shift_expression</a>
+	| relational_expression <a href="#GE-OP">GE_OP</a> <a href="#shift-expression">shift_expression</a>
+	;
+
+<a name="equality-expression">equality_expression</a>
+	: <a href="#relational-expression">relational_expression</a>
+	| equality_expression <a href="#EQ-OP">EQ_OP</a> <a href="#relational-expression">relational_expression</a>
+	| equality_expression <a href="#NE-OP">NE_OP</a> <a href="#relational-expression">relational_expression</a>
+	;
+
+<a name="and-expression">and_expression</a>
+	: <a href="#equality-expression">equality_expression</a>
+	| and_expression '&amp;' <a href="#equality-expression">equality_expression</a>
+	;
+
+<a name="exclusive-or-expression">exclusive_or_expression</a>
+	: <a href="#and-expression">and_expression</a>
+	| exclusive_or_expression '^' <a href="#and-expression">and_expression</a>
+	;
+
+<a name="inclusive-or-expression">inclusive_or_expression</a>
+	: <a href="#exclusive-or-expression">exclusive_or_expression</a>
+	| inclusive_or_expression '|' <a href="#exclusive-or-expression">exclusive_or_expression</a>
+	;
+
+<a name="logical-and-expression">logical_and_expression</a>
+	: <a href="#inclusive-or-expression">inclusive_or_expression</a>
+	| logical_and_expression <a href="#AND-OP">AND_OP</a> <a href="#inclusive-or-expression">inclusive_or_expression</a>
+	;
+
+<a name="logical-or-expression">logical_or_expression</a>
+	: <a href="#logical-and-expression">logical_and_expression</a>
+	| logical_or_expression <a href="#OR-OP">OR_OP</a> <a href="#logical-and-expression">logical_and_expression</a>
+	;
+
+<a name="conditional-expression">conditional_expression</a>
+	: <a href="#logical-or-expression">logical_or_expression</a>
+	| <a href="#logical-or-expression">logical_or_expression</a> '?' <a href="#expression">expression</a> ':' conditional_expression
+	;
+
+<a name="assignment-expression">assignment_expression</a>
+	: <a href="#conditional-expression">conditional_expression</a>
+	| <a href="#unary-expression">unary_expression</a> <a href="#assignment-operator">assignment_operator</a> assignment_expression
+	;
+
+<a name="assignment-operator">assignment_operator</a>
+	: '='
+	| <a href="#MUL-ASSIGN">MUL_ASSIGN</a>
+	| <a href="#DIV-ASSIGN">DIV_ASSIGN</a>
+	| <a href="#MOD-ASSIGN">MOD_ASSIGN</a>
+	| <a href="#ADD-ASSIGN">ADD_ASSIGN</a>
+	| <a href="#SUB-ASSIGN">SUB_ASSIGN</a>
+	| <a href="#LEFT-ASSIGN">LEFT_ASSIGN</a>
+	| <a href="#RIGHT-ASSIGN">RIGHT_ASSIGN</a>
+	| <a href="#AND-ASSIGN">AND_ASSIGN</a>
+	| <a href="#XOR-ASSIGN">XOR_ASSIGN</a>
+	| <a href="#OR-ASSIGN">OR_ASSIGN</a>
+	;
+
+<a name="expression">expression</a>
+	: <a href="#assignment-expression">assignment_expression</a>
+	| expression ',' <a href="#assignment-expression">assignment_expression</a>
+	;
+
+<a name="constant-expression">constant_expression</a>
+	: <a href="#conditional-expression">conditional_expression</a>
+	;
+
+<a name="declaration">declaration</a>
+	: <a href="#declaration-specifiers">declaration_specifiers</a> ';'
+	| <a href="#declaration-specifiers">declaration_specifiers</a> <a href="#init-declarator-list">init_declarator_list</a> ';'
+	;
+
+<a name="declaration-specifiers">declaration_specifiers</a>
+	: <a href="#storage-class-specifier">storage_class_specifier</a>
+	| <a href="#storage-class-specifier">storage_class_specifier</a> declaration_specifiers
+	| <a href="#type-specifier">type_specifier</a>
+	| <a href="#type-specifier">type_specifier</a> declaration_specifiers
+	| <a href="#type-qualifier">type_qualifier</a>
+	| <a href="#type-qualifier">type_qualifier</a> declaration_specifiers
+	;
+
+<a name="init-declarator-list">init_declarator_list</a>
+	: <a href="#init-declarator">init_declarator</a>
+	| init_declarator_list ',' <a href="#init-declarator">init_declarator</a>
+	;
+
+<a name="init-declarator">init_declarator</a>
+	: <a href="#declarator">declarator</a>
+	| <a href="#declarator">declarator</a> '=' <a href="#initializer">initializer</a>
+	;
+
+<a name="storage-class-specifier">storage_class_specifier</a>
+	: <a href="#TYPEDEF">TYPEDEF</a>
+	;
+
+<a name="type-specifier">type_specifier</a>
+	: <a href="#VOID">VOID</a>
+	| <a href="#CHAR">CHAR</a>
+	| <a href="#INT">INT</a>
+	| <a href="#DOUBLE">DOUBLE</a>
+	| <a href="#struct-specifier">struct_specifier</a>
+	| <a href="#check-type">TYPE_NAME</a>
+	;
+
+<a name="struct-specifier">struct_specifier</a>
+	: <a href="#struct">struct</a> <a href="#check-type">IDENTIFIER</a> '{' <a href="#struct-declaration-list">struct_declaration_list</a> '}'
+	| <a href="#struct">struct</a> '{' <a href="#struct-declaration-list">struct_declaration_list</a> '}'
+	| <a href="#struct">struct</a> <a href="#check-type">IDENTIFIER</a>
+	;
+
+<a name="struct">struct</a>
+	: <a href="#STRUCT">STRUCT</a>
+	;
+
+<a name="struct-declaration-list">struct_declaration_list</a>
+	: <a href="#struct-declaration">struct_declaration</a>
+	| struct_declaration_list <a href="#struct-declaration">struct_declaration</a>
+	;
+
+<a name="struct-declaration">struct_declaration</a>
+	: <a href="#specifier-qualifier-list">specifier_qualifier_list</a> <a href="#struct-declarator-list">struct_declarator_list</a> ';'
+	;
+
+<a name="specifier-qualifier-list">specifier_qualifier_list</a>
+	: <a href="#type-specifier">type_specifier</a> specifier_qualifier_list
+	| <a href="#type-specifier">type_specifier</a>
+	| <a href="#type-qualifier">type_qualifier</a> specifier_qualifier_list
+	| <a href="#type-qualifier">type_qualifier</a>
+	;
+
+<a name="struct-declarator-list">struct_declarator_list</a>
+	: <a href="#struct-declarator">struct_declarator</a>
+	| struct_declarator_list ',' <a href="#struct-declarator">struct_declarator</a>
+	;
+
+<a name="struct-declarator">struct_declarator</a>
+	: <a href="#declarator">declarator</a>
+	| ':' <a href="#constant-expression">constant_expression</a>
+	| <a href="#declarator">declarator</a> ':' <a href="#constant-expression">constant_expression</a>
+	;
+
+<a name="type-qualifier">type_qualifier</a>
+	: <a href="#CONST">CONST</a>
+	;
+
+<a name="declarator">declarator</a>
+	: <a href="#pointer">pointer</a> <a href="#direct-declarator">direct_declarator</a>
+	| <a href="#direct-declarator">direct_declarator</a>
+	;
+
+<a name="direct-declarator">direct_declarator</a>
+	: <a href="#check-type">IDENTIFIER</a>
+	| '(' <a href="#declarator">declarator</a> ')'
+	| direct_declarator '[' <a href="#constant-expression">constant_expression</a> ']'
+	| direct_declarator '[' ']'
+	| direct_declarator '(' <a href="#parameter-type-list">parameter_type_list</a> ')'
+	| direct_declarator '(' <a href="#identifier-list">identifier_list</a> ')'
+	| direct_declarator '(' ')'
+	;
+
+<a name="pointer">pointer</a>
+	: '*'
+	| '*' <a href="#type-qualifier-list">type_qualifier_list</a>
+	| '*' pointer
+	| '*' <a href="#type-qualifier-list">type_qualifier_list</a> pointer
+	;
+
+<a name="type-qualifier-list">type_qualifier_list</a>
+	: <a href="#type-qualifier">type_qualifier</a>
+	| type_qualifier_list <a href="#type-qualifier">type_qualifier</a>
+	;
+
+
+<a name="parameter-type-list">parameter_type_list</a>
+	: <a href="#parameter-list">parameter_list</a>
+	;
+
+<a name="parameter-list">parameter_list</a>
+	: <a href="#parameter-declaration">parameter_declaration</a>
+	| <a href="#parameter-list">parameter_list</a> ',' <a href="#parameter-declaration">parameter_declaration</a>
+	;
+
+<a name="parameter-declaration">parameter_declaration</a>
+	: <a href="#declaration-specifiers">declaration_specifiers</a> <a href="#declarator">declarator</a>
+	| <a href="#declaration-specifiers">declaration_specifiers</a> <a href="#abstract-declarator">abstract_declarator</a>
+	| <a href="#declaration-specifiers">declaration_specifiers</a>
+	;
+
+<a name="identifier-list">identifier_list</a>
+	: <a href="#check-type">IDENTIFIER</a>
+	| identifier_list ',' <a href="#check-type">IDENTIFIER</a>
+	;
+
+<a name="type-name">type_name</a>
+	: <a href="#specifier-qualifier-list">specifier_qualifier_list</a>
+	| <a href="#specifier-qualifier-list">specifier_qualifier_list</a> <a href="#abstract-declarator">abstract_declarator</a>
+	;
+
+<a name="abstract-declarator">abstract_declarator</a>
+	: <a href="#pointer">pointer</a>
+	| <a href="#direct-abstract-declarator">direct_abstract_declarator</a>
+	| <a href="#pointer">pointer</a> <a href="#direct-abstract-declarator">direct_abstract_declarator</a>
+	;
+
+<a name="direct-abstract-declarator">direct_abstract_declarator</a>
+	: '(' <a href="#abstract-declarator">abstract_declarator</a> ')'
+	| '[' ']'
+	| '[' <a href="#constant-expression">constant_expression</a> ']'
+	| direct_abstract_declarator '[' ']'
+	| direct_abstract_declarator '[' <a href="#constant-expression">constant_expression</a> ']'
+	| '(' ')'
+	| '(' <a href="#parameter-type-list">parameter_type_list</a> ')'
+	| direct_abstract_declarator '(' ')'
+	| direct_abstract_declarator '(' <a href="#parameter-type-list">parameter_type_list</a> ')'
+	;
+
+<a name="initializer">initializer</a>
+	: <a href="#assignment-expression">assignment_expression</a>
+	| '{' <a href="#initializer-list">initializer_list</a> '}'
+	| '{' <a href="#initializer-list">initializer_list</a> ',' '}'
+	;
+
+<a name="initializer-list">initializer_list</a>
+	: <a href="#initializer">initializer</a>
+	| initializer_list ',' <a href="#initializer">initializer</a>
+	;
+
+<a name="statement">statement</a>
+	| <a href="#compound-statement">compound_statement</a>
+	| <a href="#expression-statement">expression_statement</a>
+	| <a href="#selection-statement">selection_statement</a>
+	| <a href="#iteration-statement">iteration_statement</a>
+	| <a href="#jump-statement">jump_statement</a>
+	;
+
+<a name="compound-statement">compound_statement</a>
+	: '{' '}'
+	| '{' <a href="#statement-list">statement_list</a> '}'
+	| '{' <a href="#declaration-list">declaration_list</a> '}'
+	| '{' <a href="#declaration-list">declaration_list</a> <a href="#statement-list">statement_list</a> '}'
+	;
+
+<a name="declaration-list">declaration_list</a>
+	: <a href="#declaration">declaration</a>
+	| declaration_list <a href="#declaration">declaration</a>
+	;
+
+<a name="statement-list">statement_list</a>
+	: <a href="#statement">statement</a>
+	| statement_list <a href="#statement">statement</a>
+	;
+
+<a name="expression-statement">expression_statement</a>
+	: ';'
+	| <a href="#expression">expression</a> ';'
+	;
+
+<a name="selection-statement">selection_statement</a>
+	: <a href="#IF">IF</a> '(' <a href="#expression">expression</a> ')' <a href="#statement">statement</a>
+	| <a href="#IF">IF</a> '(' <a href="#expression">expression</a> ')' <a href="#statement">statement</a> <a href="#ELSE">ELSE</a> <a href="#statement">statement</a>
+	;
+
+<a name="iteration-statement">iteration_statement</a>
+	: <a href="#WHILE">WHILE</a> '(' <a href="#expression">expression</a> ')' <a href="#statement">statement</a>
+	| <a href="#FOR">FOR</a> '(' <a href="#expression-statement">expression_statement</a> <a href="#expression-statement">expression_statement</a> ')' <a href="#statement">statement</a>
+	| <a href="#FOR">FOR</a> '(' <a href="#expression-statement">expression_statement</a> <a href="#expression-statement">expression_statement</a> <a href="#expression">expression</a> ')' <a href="#statement">statement</a>
+	;
+
+<a name="jump-statement">jump_statement</a>
+	| <a href="#CONTINUE">CONTINUE</a> ';'
+	| <a href="#BREAK">BREAK</a> ';'
+	| <a href="#RETURN">RETURN</a> ';'
+	| <a href="#RETURN">RETURN</a> <a href="#expression">expression</a> ';'
+	;
+
+<a name="translation-unit">translation_unit</a>
+	: <a href="#external-declaration">external_declaration</a>
+	| translation_unit <a href="#external-declaration">external_declaration</a>
+	;
+
+<a name="external-declaration">external_declaration</a>
+	: <a href="#function-definition">function_definition</a>
+	| <a href="#declaration">declaration</a>
+	;
+
+<a name="function-definition">function_definition</a>
+	: <a href="#declaration-specifiers">declaration_specifiers</a> <a href="#declarator">declarator</a> <a href="#declaration-list">declaration_list</a> <a href="#compound-statement">compound_statement</a>
+	| <a href="#declaration-specifiers">declaration_specifiers</a> <a href="#declarator">declarator</a> <a href="#compound-statement">compound_statement</a>
+	| <a href="#declarator">declarator</a> <a href="#declaration-list">declaration_list</a> <a href="#compound-statement">compound_statement</a>
+	| <a href="#declarator">declarator</a> <a href="#compound-statement">compound_statement</a>
+	;
+
+%%
+
+&quot;/*&quot;			{ <a href="#comment">comment()</a>; }
+
+&quot;break&quot;			{ count(); return(<a name="BREAK">BREAK</a>); }
+&quot;char&quot;			{ count(); return(<a name="CHAR">CHAR</a>); }
+&quot;const&quot;			{ count(); return(<a name="CONST">CONST</a>); }
+&quot;continue&quot;		{ count(); return(<a name="CONTINUE">CONTINUE</a>); }
+&quot;double&quot;		{ count(); return(<a name="DOUBLE">DOUBLE</a>); }
+&quot;else&quot;			{ count(); return(<a name="ELSE">ELSE</a>); }
+&quot;for&quot;			{ count(); return(<a name="FOR">FOR</a>); }
+&quot;if&quot;			{ count(); return(<a name="IF">IF</a>); }
+&quot;int&quot;			{ count(); return(<a name="INT">INT</a>); }
+&quot;return&quot;		{ count(); return(<a name="RETURN">RETURN</a>); }
+&quot;struct&quot;		{ count(); return(<a name="STRUCT">STRUCT</a>); }
+&quot;typedef&quot;		{ count(); return(<a name="TYPEDEF">TYPEDEF</a>); }
+&quot;void&quot;			{ count(); return(<a name="VOID">VOID</a>); }
+&quot;while&quot;			{ count(); return(<a name="WHILE">WHILE</a>); }
+
+L?\&quot;(\\.|[^\\&quot;])*\&quot;	{ count(); return(<a name="STRING-LITERAL">STRING_LITERAL</a>); }
+
+&quot;&gt;&gt;=&quot;			{ count(); return(<a name="RIGHT-ASSIGN">RIGHT_ASSIGN</a>); }
+&quot;&lt;&lt;=&quot;			{ count(); return(<a name="LEFT-ASSIGN">LEFT_ASSIGN</a>); }
+&quot;+=&quot;			{ count(); return(<a name="ADD-ASSIGN">ADD_ASSIGN</a>); }
+&quot;-=&quot;			{ count(); return(<a name="SUB-ASSIGN">SUB_ASSIGN</a>); }
+&quot;*=&quot;			{ count(); return(<a name="MUL-ASSIGN">MUL_ASSIGN</a>); }
+&quot;/=&quot;			{ count(); return(<a name="DIV-ASSIGN">DIV_ASSIGN</a>); }
+&quot;%=&quot;			{ count(); return(<a name="MOD-ASSIGN">MOD_ASSIGN</a>); }
+&quot;&amp;=&quot;			{ count(); return(<a name="AND-ASSIGN">AND_ASSIGN</a>); }
+&quot;^=&quot;			{ count(); return(<a name="XOR-ASSIGN">XOR_ASSIGN</a>); }
+&quot;|=&quot;			{ count(); return(<a name="OR-ASSIGN">OR_ASSIGN</a>); }
+&quot;&gt;&gt;&quot;			{ count(); return(<a name="RIGHT-OP">RIGHT_OP</a>); }
+&quot;&lt;&lt;&quot;			{ count(); return(<a name="LEFT-OP">LEFT_OP</a>); }
+&quot;++&quot;			{ count(); return(<a name="INC-OP">INC_OP</a>); }
+&quot;--&quot;			{ count(); return(<a name="DEC-OP">DEC_OP</a>); }
+&quot;-&gt;&quot;			{ count(); return(<a name="PTR-OP">PTR_OP</a>); }
+&quot;&amp;&amp;&quot;			{ count(); return(<a name="AND-OP">AND_OP</a>); }
+&quot;||&quot;			{ count(); return(<a name="OR-OP">OR_OP</a>); }
+&quot;&lt;=&quot;			{ count(); return(<a name="LE-OP">LE_OP</a>); }
+&quot;&gt;=&quot;			{ count(); return(<a name="GE-OP">GE_OP</a>); }
+&quot;==&quot;			{ count(); return(<a name="EQ-OP">EQ_OP</a>); }
+&quot;!=&quot;			{ count(); return(<a name="NE-OP">NE_OP</a>); }
+&quot;;&quot;			{ count(); return(';'); }
+(&quot;{&quot;|"&lt;%")		{ count(); return('{'); }
+(&quot;}&quot;|"%&gt;")		{ count(); return('}'); }
+&quot;,&quot;			{ count(); return(','); }
+&quot;:&quot;			{ count(); return(':'); }
+&quot;=&quot;			{ count(); return('='); }
+&quot;(&quot;			{ count(); return('('); }
+&quot;)&quot;			{ count(); return(')'); }
+(&quot;[&quot;|"&lt;:")		{ count(); return('['); }
+(&quot;]&quot;|":&gt;")		{ count(); return(']'); }
+&quot;.&quot;			{ count(); return('.'); }
+&quot;&amp;&quot;			{ count(); return('&amp;'); }
+&quot;!&quot;			{ count(); return('!'); }
+&quot;~&quot;			{ count(); return('~'); }
+&quot;-&quot;			{ count(); return('-'); }
+&quot;+&quot;			{ count(); return('+'); }
+&quot;*&quot;			{ count(); return('*'); }
+&quot;/&quot;			{ count(); return('/'); }
+&quot;%&quot;			{ count(); return('%'); }
+&quot;&lt;&quot;			{ count(); return('&lt;'); }
+&quot;&gt;&quot;			{ count(); return('&gt;'); }
+&quot;^&quot;			{ count(); return('^'); }
+&quot;|&quot;			{ count(); return('|'); }
+&quot;?&quot;			{ count(); return('?'); }

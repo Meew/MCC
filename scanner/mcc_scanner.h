@@ -10,18 +10,18 @@ public:
 	void assign_file(const char*);
 
 	int next();
-	scanner_node::token get();
+	token get();
 
 	class bad_token {};
 
-	scanner_node::token::position get_position();
+	token::position get_position();
 
 private:
-	scanner_node::token::position curr_pos_;
+	token::position curr_pos_;
 
 	scanner_node* node_;
 	
-	scanner_node::token* token_;
+	token* token_;
 
 	class bad_file {};
 	ifstream input_;
