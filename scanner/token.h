@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <iostream>
+#include <string>
 #include <map>
 
 using namespace std;
@@ -58,10 +59,21 @@ enum token_punctuator_value {
 	PUNCTUATOR_field
 };
 
+class token_maps {
+public:
+	token_maps();
+
+	map<token_type, string> token_type_to_str;
+	map<token_punctuator_value, string> pctr_type_to_str;
+};
+
+//extern token_maps t_maps;
+
 class token {
 public:
 	token();
 
+	bool is_constant();
 	string get_type_name();
 
 	void reset();
@@ -88,12 +100,9 @@ public:
 		double double_value;
 		char* string_value;
 		char char_value;
+		token_punctuator_value pctr_value;
 	} value;
+
 	position pos;
-	string text;
-
-private:
-	void feel_map();
-
-	map<token_type, string> enum_to_name;
+	string text;	
 };

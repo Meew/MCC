@@ -1,15 +1,5 @@
 #include "scanner_node.h"
 
-std::ostream& operator << (std::ostream& out, token token_) {
-	std::ostream& temp = out << token_.get_type_name() << " " << token_.pos << "\t" << token_.text << "\t";
-	switch (token_.type) {
-		case     TOKEN_INTEGER:    return temp << token_.value.integer_value;
-		case     TOKEN_DOUBLE:     return temp << token_.value.double_value;
-		case     TOKEN_CHAR:	   return temp << token_.value.char_value;
-		default:                   return temp << token_.value.string_value;
-	}
-}
-
 scanner_node::token_parts::token_parts() {}
 
 void scanner_node::token_parts::clear() {
@@ -663,56 +653,7 @@ token* string_node::finish_processing() {
                           
 punctuator_node::punctuator_node(bool can_be_stripped, token* token, token_punctuator_value value):
 scanner_node(can_be_stripped, token) {
-	feel_map();
 	value_ = value;
-}
-
-void punctuator_node::feel_map() {
-	enum_to_name[PUNCTUATOR_curlybraceL] = "curlybraceL";
-	enum_to_name[PUNCTUATOR_curlybraceR] = "curlybraceR";
-	enum_to_name[PUNCTUATOR_semicolon] = "semicolon";
-	enum_to_name[PUNCTUATOR_comma] = "comma";
-	enum_to_name[PUNCTUATOR_braceL] = "braceL";
-	enum_to_name[PUNCTUATOR_braceR] = "braceR";
-	enum_to_name[PUNCTUATOR_ternaryQ] = "ternaryQ";
-	enum_to_name[PUNCTUATOR_ternaryC] = "ternaryC";
-	enum_to_name[PUNCTUATOR_squarebraceL] = "squarebraceL";
-	enum_to_name[PUNCTUATOR_squarebraceR] = "squarebraceR";
-	enum_to_name[PUNCTUATOR_xor] = "xor";
-	enum_to_name[PUNCTUATOR_xorAssign] = "xorAssign";
-	enum_to_name[PUNCTUATOR_asterisk] = "asterisk";
-	enum_to_name[PUNCTUATOR_asteriskAssign] = "asteriskAssign";
-	enum_to_name[PUNCTUATOR_notBin] = "notBin";
-	enum_to_name[PUNCTUATOR_not] = "not";
-	enum_to_name[PUNCTUATOR_notEqual] = "notEqual";
-	enum_to_name[PUNCTUATOR_assign] = "assign";
-	enum_to_name[PUNCTUATOR_equal] = "equal";
-	enum_to_name[PUNCTUATOR_mod] = "mod";
-	enum_to_name[PUNCTUATOR_modAssign] = "modAssign";
-	enum_to_name[PUNCTUATOR_or] = "or";
-	enum_to_name[PUNCTUATOR_orBin] = "orBin";
-	enum_to_name[PUNCTUATOR_orBinAssign] = "orBinAssign";
-	enum_to_name[PUNCTUATOR_andBin] = "andBin";
-	enum_to_name[PUNCTUATOR_and] = "and";
-	enum_to_name[PUNCTUATOR_andBinAssign] = "andBinAssign";
-	enum_to_name[PUNCTUATOR_plus] = "plus";
-	enum_to_name[PUNCTUATOR_increment] = "increment";
-	enum_to_name[PUNCTUATOR_plusAssign] = "plusAssign";
-	enum_to_name[PUNCTUATOR_minus] = "minus";
-	enum_to_name[PUNCTUATOR_fieldPtr] = "fieldPtr";
-	enum_to_name[PUNCTUATOR_decrement] = "decrement";
-	enum_to_name[PUNCTUATOR_minusAssign] = "minusAssign";
-	enum_to_name[PUNCTUATOR_less] = "less";
-	enum_to_name[PUNCTUATOR_shiftL] = "shiftL";
-	enum_to_name[PUNCTUATOR_lessEqual] = "lessEqual";
-	enum_to_name[PUNCTUATOR_shiftLAssign] = "shiftLAssign";
-	enum_to_name[PUNCTUATOR_greater] = "greater";
-	enum_to_name[PUNCTUATOR_shiftR] = "shiftR";
-	enum_to_name[PUNCTUATOR_greaterEqual] = "greaterEqual";
-	enum_to_name[PUNCTUATOR_shiftRAssign] = "shiftRAssign";
-	enum_to_name[PUNCTUATOR_div] = "div";
-	enum_to_name[PUNCTUATOR_divAssign] = "divAssign";
-	enum_to_name[PUNCTUATOR_field] = "field";
 }
 
 void punctuator_node::process_char(char ch) {
@@ -720,7 +661,7 @@ void punctuator_node::process_char(char ch) {
 }
 
 token* punctuator_node::finish_processing() {
-	token_->value.string_value = enum_to_name[value_];
+	token_->value.pctr_value = value_;
 	token_->type = TOKEN_PUNCTUATOR;
 
 	return get_token();

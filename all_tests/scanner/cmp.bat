@@ -1,6 +1,6 @@
 @echo off
 for %%i in (*.c) do (
-	..\Debug\mcc.exe -l %%i
+	..\..\Debug\mcc.exe -l %%i
 	fc %%~ni.txt lex.out
 	if ERRORLEVEL 1 ( 
 		echo %%i - Fail 

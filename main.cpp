@@ -5,7 +5,8 @@
 #include <list>
 #include <stdlib.h>
 
-#include "scanner/mcc_scanner.h"
+#include "scanner\mcc_scanner.h"
+#include "parser\mcc_parser.h"
 
 using namespace std;
 
@@ -35,6 +36,7 @@ bool analyze_params(int argc, char* argv[]) {
 		}
 
 	} else if (argc == 3) { 
+
 		if (argv[1][1] == 'l') {
 			mcc_scanner scanner(argv[2]);
 			try {
@@ -48,9 +50,13 @@ bool analyze_params(int argc, char* argv[]) {
 			catch (mcc_scanner::bad_token) {
 				cerr << "Bad lexeme. Current position - " << scanner.get_position() << endl;
 			}
+
 		} else if (argv[1][1] == 's') {
 			mcc_scanner scanner(argv[2]);
-			//mcc_parser parser(&scanner, ...);
+			mcc_parser parser(&scanner);
+			expr_node* node = parser.parse();
+			node->print();
+
 		} else {
 			cerr << "Error: Unknown argument." << endl;
 		}
@@ -63,7 +69,7 @@ bool analyze_params(int argc, char* argv[]) {
 
 int main(int argc, char* argv[]) {
 
-	analyze_params(argc, argv);
+	//analyze_params(argc, argv);
 
 #if 0
 	mcc_scanner scanner("C:\\Users\\Meew\\Dropbox\\MCC\\MCC\\all_tests\\davidyuk_test_01.c");
@@ -81,6 +87,11 @@ int main(int argc, char* argv[]) {
 
 	system("pause");
 #endif
+
+	mcc_scanner scanner("C:\\Users\\Meew\\Dropbox\\MCC\\MCC\\all_tests\\parser\\sum_const.c");
+	mcc_parser parser(&scanner);
+	expr_node* node = parser.parse();
+	node->print();
 
 	return 0;
 }

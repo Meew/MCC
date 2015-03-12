@@ -154,11 +154,7 @@ public:
 	virtual void process_char(char);
 	token* finish_processing();
 private:
-	void feel_map();
-
 	token_punctuator_value value_;
-
-	map<token_punctuator_value, char*> enum_to_name;
 };
 
 class comments_node: public scanner_node {
